@@ -8,7 +8,7 @@ This repository contains my Python assignments and mini projects as part of my l
    Learning Python syntax, understanding variables, and performing simple operations.
 
 2. **Mini Project: BSA_AML (still working on it)**  
-   A calculator program to practice functions and handle user inputs.
+   A mini data comparison project to compare the weekly files.
 
 3. **Assignment 2: Loops and Conditionals**  
    Exercises to solidify loops (`for`, `while`) and decision-making statements.
