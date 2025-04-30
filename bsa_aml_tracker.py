@@ -15,9 +15,22 @@ def apply_dq_check(df, tracker):
     observations = []
     current_week_wednesday = get_current_week_wednesday()
 
+    # Clean percentage fields
+    percentage_fields = ["Prior Week % Complete", "% Complete", "CTR", "SAR", "EWFCRA"]
+    for field in percentage_fields:
+        if field in df.columns:
+            df[field] = (
+                df[field]
+                .astype(str)
+                .str.replace("%", "", regex=False)
+                .str.replace(r"[^\d\.]", "", regex=True)
+                .str.strip()
+            )
+            df[field] = pd.to_numeric(df[field], errors="coerce") * 100
+
     for index, row in df.iterrows():
         # DQ1: If Status = On Track then the "Current % Complete" column should have a % value other than 0
-        if row["Status"] == "On Track" and row["% Complete"] == 0:
+        if row["Status"] == "On Track" and df.at[index, "% Complete"] == 0:
             observations.append(
                 {
                     "Tracker Name": tracker,
@@ -42,7 +55,7 @@ def apply_dq_check(df, tracker):
             )
 
         # DQ3: If Status = On Track then the "Current % Complete" should be less than 100%
-        if row["Status"] == "On Track" and row["% Complete"] == 100:
+        if row["Status"] == "On Track" and df.at[index, "% Complete"] == 100:
             observations.append(
                 {
                     "Tracker Name": tracker,
@@ -51,9 +64,14 @@ def apply_dq_check(df, tracker):
                     "Observation": "Status is On Track but % Complete is 100%.",
                 }
             )
+        # to check the numeric value of the percentage field
+        # if row["Status"] == "Completed":
+        #     print(
+        #         f"[DEBUG] Row {index + 2}: Status=Completed, % Complete={df.at[index, '% Complete']}"
+        #     )
 
         # DQ4: If Status = Completed then the "Current % Complete" should be 100%
-        if row["Status"] == "Completed" and row["% Complete"] != 100:
+        if row["Status"] == "Completed" and df.at[index, "% Complete"] != 100:
             observations.append(
                 {
                     "Tracker Name": tracker,
@@ -86,7 +104,7 @@ def apply_dq_check(df, tracker):
             )
 
         # DQ6: If Status = Not Started then the "Current % Complete" should have null or 0%
-        if row["Status"] == "Not Started" and row["% Complete"] != 0:
+        if row["Status"] == "Not Started" and df.at[index, "% Complete"] != 0:
             observations.append(
                 {
                     "Tracker Name": tracker,
@@ -185,7 +203,7 @@ observations_df = pd.DataFrame(observations)
 
 # Save observations to Excel
 observations_df.to_excel(
-    "C:\\Users\\saran\\OneDrive\\Desktop\\DQ_Validations_Results.xlsx", index=False
+    "C:\\Users\\saran\\OneDrive\\Desktop\\DQ_Validations_Results_New.xlsx", index=False
 )
 
 print("DQ Validation results have been saved successfully")
